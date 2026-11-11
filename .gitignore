@@ -1,0 +1,27 @@
+# ---------- Segredos e ambiente ----------
+.env
+.env.*
+!.env.example
+
+# ---------- .NET ----------
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+*.trx
+
+# Uploads gerados ao rodar a API fora do Docker
+backend/KleioHistoria.API/uploads/
+
+# ---------- Node / Angular (ver também frontend/.gitignore) ----------
+node_modules/
+dist/
+.angular/
+
+# ---------- Sistema / editores ----------
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

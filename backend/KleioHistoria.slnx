@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="KleioHistoria.API/KleioHistoria.API.csproj" />
+  <Project Path="KleioHistoria.Tests/KleioHistoria.Tests.csproj" />
+</Solution>

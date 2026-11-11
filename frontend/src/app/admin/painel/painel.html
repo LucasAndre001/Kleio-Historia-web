@@ -1,0 +1,149 @@
+<header class="topo">
+  <div class="marca">
+    <span class="nome">Kleio História</span>
+    <span class="sub">• Painel administrativo</span>
+  </div>
+  <div class="direita">
+    <a routerLink="/" target="_blank" rel="noopener">Ver site ↗</a>
+    <span class="usuario">{{ auth.usuario()?.nome }}</span>
+    <button type="button" (click)="sair()"><app-icone nome="voltar" [tamanho]="28" [espessura]="1.5" /> Sair</button>
+  </div>
+</header>
+
+<main>
+  <!-- Ações principais -->
+  <div class="acoes-principais">
+    <button type="button" class="importar" (click)="importando.set(true)">
+      <app-icone nome="pdf" [tamanho]="38" [espessura]="1.4" />
+      <span><strong>Importar PDF</strong><span>Extrai o texto para o editor</span></span>
+    </button>
+    <button type="button" class="nova" (click)="novaPublicacao()">
+      <app-icone nome="lapis" [tamanho]="34" [espessura]="1.4" />
+      <span>Nova publicação manual</span>
+    </button>
+  </div>
+
+  <div class="indicadores" aria-label="Resumo">
+    <div><strong>{{ totalPublicados() }}</strong> {{ totalPublicados() === 1 ? 'artigo publicado' : 'artigos publicados' }}</div>
+    <div><strong>{{ totalRascunhos() }}</strong> {{ totalRascunhos() === 1 ? 'rascunho' : 'rascunhos' }}</div>
+    <div><strong>{{ sugestoes().length }}</strong> {{ sugestoes().length === 1 ? 'sugestão recebida' : 'sugestões recebidas' }}</div>
+  </div>
+
+  @if (aviso(); as a) {
+    <p class="aviso" [class.erro]="a.tipo === 'erro'" role="status">{{ a.texto }}</p>
+  }
+  @if (erro()) {
+    <p class="aviso erro" role="alert">{{ erro() }} <button type="button" class="btn btn-texto" (click)="carregar()">Tentar novamente</button></p>
+  }
+
+  <!-- Editor -->
+  <section #secaoEditor class="secao-editor" aria-labelledby="titulo-editor">
+    <app-editor-artigo [categorias]="categorias()" (alterado)="carregar()" />
+  </section>
+
+  <!-- Artigos -->
+  <section aria-labelledby="titulo-lista">
+    <div class="cabecalho-secao">
+      <h2 id="titulo-lista">Artigos</h2>
+      <div class="abas" role="tablist" aria-label="Filtrar artigos">
+        <button type="button" role="tab" [attr.aria-selected]="filtro() === 'todos'" [class.ativa]="filtro() === 'todos'" (click)="filtro.set('todos')">Todos ({{ artigos().length }})</button>
+        <button type="button" role="tab" [attr.aria-selected]="filtro() === 'publicado'" [class.ativa]="filtro() === 'publicado'" (click)="filtro.set('publicado')">Publicados ({{ totalPublicados() }})</button>
+        <button type="button" role="tab" [attr.aria-selected]="filtro() === 'rascunho'" [class.ativa]="filtro() === 'rascunho'" (click)="filtro.set('rascunho')">Rascunhos ({{ totalRascunhos() }})</button>
+      </div>
+    </div>
+
+    <div class="lista">
+      @for (a of artigosFiltrados(); track a.id) {
+        <div class="item" [class.ocupado]="estaOcupado(a.id)">
+          @if (a.imagemCapa) {
+            <img class="miniatura" [src]="a.imagemCapa" alt="" />
+          } @else {
+            <div class="miniatura sem-imagem"><app-icone nome="imagem" [tamanho]="26" [espessura]="1.2" /></div>
+          }
+          <div class="info">
+            <span class="titulo">{{ a.titulo }}</span>
+            <span class="data">
+              @if (a.status === 'publicado' && a.dataPublicacao) { publicado em {{ a.dataPublicacao | date: 'dd/MM/yyyy' }} }
+              @else { rascunho salvo em {{ a.dataAtualizacao | date: 'dd/MM/yyyy' }} }
+              · {{ a.categoria }}
+            </span>
+          </div>
+          <span class="selo" [class.publicado]="a.status === 'publicado'">{{ a.status === 'publicado' ? 'Publicado' : 'Rascunho' }}</span>
+          <div class="botoes">
+            <button type="button" class="icone estrela" [class.ligada]="a.destaque" [disabled]="a.status !== 'publicado' || estaOcupado(a.id)"
+                    (click)="alternarDestaque(a)" [attr.aria-pressed]="a.destaque"
+                    [attr.aria-label]="a.status !== 'publicado' ? 'Publique para poder destacar' : (a.destaque ? 'Remover dos destaques' : 'Colocar nos destaques')"
+                    [title]="a.status !== 'publicado' ? 'Publique para poder destacar' : (a.destaque ? 'Remover dos destaques' : 'Mostrar no carrossel da página inicial')">
+              <app-icone nome="estrela" [tamanho]="22" [preenchido]="a.destaque" />
+            </button>
+            @if (a.status === 'publicado') {
+              <a class="icone" [routerLink]="['/artigos', a.slug]" target="_blank" rel="noopener" aria-label="Ver no site" title="Ver no site"><app-icone nome="olho" /></a>
+            } @else {
+              <a class="icone" [routerLink]="['/admin/artigos', a.id, 'previa']" aria-label="Pré-visualizar" title="Pré-visualizar"><app-icone nome="olho" /></a>
+            }
+            <button type="button" class="icone" (click)="editar(a)" aria-label="Editar artigo" title="Editar"><app-icone nome="editar" /></button>
+            @if (a.status === 'publicado') {
+              <button type="button" class="texto" [disabled]="estaOcupado(a.id)" (click)="despublicar(a)">Despublicar</button>
+            } @else {
+              <button type="button" class="texto" [disabled]="estaOcupado(a.id)" (click)="publicar(a)">Publicar</button>
+            }
+            <button type="button" class="icone perigo" [disabled]="estaOcupado(a.id)" (click)="pedirExclusao('artigo', a.id, a.titulo)"
+                    [attr.aria-label]="'Excluir ' + a.titulo" title="Excluir"><app-icone nome="lixeira" /></button>
+          </div>
+        </div>
+      } @empty {
+        <p class="vazio">{{ carregando() ? 'Carregando…' : 'Nenhum artigo ' + (filtro() === 'todos' ? 'cadastrado ainda.' : 'neste filtro.') }}</p>
+      }
+    </div>
+  </section>
+
+  <!-- Sugestões -->
+  <section aria-labelledby="titulo-sugestoes">
+    <div class="cabecalho-secao"><h2 id="titulo-sugestoes">Sugestões recebidas</h2></div>
+    <div class="lista">
+      @for (s of sugestoes(); track s.id) {
+        <div class="sugestao" [class.ocupado]="estaOcupado(-s.id)">
+          <div class="info">
+            <strong>{{ s.temaSugerido }}</strong>
+            <span class="data">
+              {{ s.nome }} · <a [href]="'mailto:' + s.email">{{ s.email }}</a>
+              @if (s.telefone) { · {{ s.telefone }} }
+              · {{ s.dataEnvio | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+            @if (s.mensagem) { <p>{{ s.mensagem }}</p> }
+          </div>
+          <button type="button" class="icone perigo" [disabled]="estaOcupado(-s.id)" (click)="pedirExclusao('sugestao', s.id, s.temaSugerido)"
+                  aria-label="Excluir sugestão" title="Excluir"><app-icone nome="lixeira" /></button>
+        </div>
+      } @empty {
+        <p class="vazio">Nenhuma sugestão recebida ainda.</p>
+      }
+    </div>
+  </section>
+</main>
+
+<footer class="rodape">© Kleio História - Todos os direitos reservados</footer>
+
+@if (importando()) {
+  <app-importar-pdf (fechar)="importando.set(false)" (revisar)="revisarImportacao($event)" />
+}
+
+@if (confirmacao(); as c) {
+  <div class="modal-fundo" (click)="confirmacao.set(null)">
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="titulo-confirmacao" (click)="$event.stopPropagation()">
+      <h3 id="titulo-confirmacao">{{ c.tipo === 'artigo' ? 'Excluir artigo?' : 'Excluir sugestão?' }}</h3>
+      <p>
+        @if (c.tipo === 'artigo') {
+          "{{ c.titulo }}" e todos os seus capítulos serão excluídos definitivamente.
+          Para apenas tirá-lo do site, use <em>Despublicar</em>.
+        } @else {
+          A sugestão "{{ c.titulo }}" será excluída definitivamente.
+        }
+      </p>
+      <div class="modal-acoes">
+        <button type="button" class="btn btn-contorno" (click)="confirmacao.set(null)">Cancelar</button>
+        <button type="button" class="btn btn-perigo" (click)="confirmarExclusao()">Excluir definitivamente</button>
+      </div>
+    </div>
+  </div>
+}

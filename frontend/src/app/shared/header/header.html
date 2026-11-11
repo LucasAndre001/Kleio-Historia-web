@@ -1,0 +1,30 @@
+<header class="topo">
+  <div class="esquerda">
+    <button type="button" class="menu" (click)="alternarMenu()" [attr.aria-expanded]="menuAberto()"
+            aria-controls="navegacao-principal" [attr.aria-label]="menuAberto() ? 'Fechar menu' : 'Abrir menu'">
+      <app-icone nome="menu" [tamanho]="30" [espessura]="1.4" />
+    </button>
+    <a class="marca" routerLink="/">Kleio História</a>
+  </div>
+
+  @if (modo() === 'voltar') {
+    <a class="direita voltar" routerLink="/" aria-label="Voltar para a página inicial">
+      <app-icone nome="voltar" [tamanho]="40" [espessura]="1.3" />
+    </a>
+  } @else {
+    <a class="direita professor" routerLink="/admin/login">
+      <app-icone nome="usuario" [tamanho]="20" />
+      <span>Área do professor</span>
+    </a>
+  }
+</header>
+
+<!-- O botão de menu (☰) abre e fecha esta barra. -->
+<div class="recolhivel" [class.aberto]="menuAberto()">
+  <nav id="navegacao-principal" class="navegacao" aria-label="Navegação principal" [attr.inert]="menuAberto() ? null : ''">
+    <a routerLink="/" fragment="topo" [class.ativo]="ativo() === 'home'">Home</a>
+    <a routerLink="/" fragment="artigos" [class.ativo]="ativo() === 'artigos'">Artigos</a>
+    <a routerLink="/" fragment="sugestao" [class.ativo]="ativo() === 'sugestao'">Sugestão</a>
+    <a routerLink="/" fragment="sobre" [class.ativo]="ativo() === 'sobre'">Sobre</a>
+  </nav>
+</div>

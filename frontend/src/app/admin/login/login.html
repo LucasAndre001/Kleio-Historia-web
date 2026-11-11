@@ -1,0 +1,36 @@
+<div class="fundo">
+  <div class="circulo" aria-hidden="true"></div>
+  <main class="card">
+    <h1>Kleio História</h1>
+    <p class="sub">Área do professor</p>
+    <div class="traco"></div>
+
+    @if (erro()) {
+      <p class="erro" role="alert"><app-icone nome="alerta" [tamanho]="20" [espessura]="2" /> {{ erro() }}</p>
+    } @else if (sessaoExpirada) {
+      <p class="info" role="status">Sua sessão expirou. Entre novamente.</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="entrar()" novalidate>
+      <label for="email">E-mail:</label>
+      <input id="email" type="email" formControlName="email" autocomplete="username"
+             [attr.aria-invalid]="campoInvalido('email')" aria-describedby="erro-email" />
+      @if (campoInvalido('email')) { <small id="erro-email" class="erro-campo">Informe um e-mail válido.</small> }
+
+      <label for="senha">Senha:</label>
+      <div class="campo-senha" [class.invalido]="campoInvalido('senha')">
+        <input id="senha" [type]="senhaVisivel() ? 'text' : 'password'" formControlName="senha" autocomplete="current-password"
+               [attr.aria-invalid]="campoInvalido('senha')" aria-describedby="erro-senha" />
+        <button type="button" (click)="senhaVisivel.set(!senhaVisivel())"
+                [attr.aria-label]="senhaVisivel() ? 'Ocultar senha' : 'Mostrar senha'" [attr.aria-pressed]="senhaVisivel()">
+          <app-icone nome="olho" [tamanho]="22" />
+        </button>
+      </div>
+      @if (campoInvalido('senha')) { <small id="erro-senha" class="erro-campo">Informe a senha.</small> }
+
+      <button type="submit" class="entrar" [disabled]="carregando()">{{ carregando() ? 'Entrando…' : 'Entrar' }}</button>
+    </form>
+
+    <a class="voltar" routerLink="/"><app-icone nome="voltar" [tamanho]="20" [espessura]="2" /> Voltar ao site</a>
+  </main>
+</div>

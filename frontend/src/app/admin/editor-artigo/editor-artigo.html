@@ -1,0 +1,144 @@
+<div class="cabecalho">
+  <h2 id="titulo-editor">Editor de artigo</h2>
+  <span class="estado">
+    {{ rotuloEstado() }}
+    @if (form.dirty && id()) { <span class="pendente">· alterações não salvas</span> }
+  </span>
+</div>
+
+<div class="cartao" [class.carregando]="carregando()" [formGroup]="form">
+  @if (importacao(); as imp) {
+    <div class="faixa-pdf">
+      <p>
+        <strong>Conteúdo importado de "{{ imp.nomeArquivoOriginal }}"</strong>
+        ({{ imp.totalPaginas }} {{ imp.totalPaginas === 1 ? 'página' : 'páginas' }}).
+        Revise o texto, organize os capítulos e salve como rascunho. Nada foi publicado.
+      </p>
+      <details>
+        <summary>Ver texto original do PDF e avisos</summary>
+        @if (imp.avisos.length) {
+          <ul class="avisos">@for (a of imp.avisos; track $index) { <li>{{ a }}</li> }</ul>
+        }
+        @for (p of imp.paginas; track p.numero) {
+          <details class="pagina">
+            <summary>Página {{ p.numero }}</summary>
+            <pre>{{ p.texto || '(sem texto selecionável)' }}</pre>
+          </details>
+        }
+      </details>
+    </div>
+  }
+
+  <label class="campo">
+    <span>Título do artigo</span>
+    <input class="titulo" formControlName="titulo" maxlength="200" [class.invalido]="invalido('titulo')" />
+    @if (invalido('titulo')) { <small class="erro">Informe um título entre 3 e 200 caracteres.</small> }
+    @if (slug()) { <small class="dica">Endereço: /artigos/{{ slug() }}</small> }
+  </label>
+
+  <div class="duas-colunas">
+    <div class="coluna">
+      <label class="campo">
+        <span>Categoria / tema</span>
+        <input class="titulo menor" formControlName="categoria" list="lista-categorias" maxlength="80" [class.invalido]="invalido('categoria')" />
+        <datalist id="lista-categorias">@for (c of categorias(); track c) { <option [value]="c"></option> }</datalist>
+        @if (invalido('categoria')) { <small class="erro">Informe a categoria.</small> }
+      </label>
+      <label class="campo">
+        <span>Autor <small class="dica">opcional</small></span>
+        <input formControlName="autor" maxlength="150" />
+      </label>
+    </div>
+
+    <app-campo-imagem formControlName="imagemCapa" rotulo="Imagem de capa"
+                      dica="Aparece no card do artigo. JPG, PNG, GIF ou WEBP até 5 MB, ou um link da internet." />
+  </div>
+
+  <app-campo-imagem formControlName="imagemBanner" rotulo="Banner do carrossel (opcional)" formato="banner"
+                    dica="Imagem larga (ex.: 1600 × 700) usada quando o artigo está nos destaques da página inicial. Sem ela, o carrossel usa a capa." />
+
+  <label class="campo">
+    <span>Resumo</span>
+    <textarea formControlName="resumo" rows="2" maxlength="600"></textarea>
+    <small class="dica direita">{{ form.controls.resumo.value.length }}/600 · aparece nos cards da página inicial</small>
+  </label>
+
+  <!-- Capítulos em abas -->
+  <div class="campo">
+    <span>Capítulos</span>
+    <div class="abas" role="tablist" aria-label="Capítulos do artigo">
+      @for (c of capitulos.controls; track c; let i = $index) {
+        <button type="button" role="tab" [attr.aria-selected]="i === ativo()" [class.ativa]="i === ativo()"
+                [class.invalida]="c.invalid && c.touched" (click)="selecionar(i)">
+          {{ i + 1 }}. {{ c.controls.titulo.value || 'Sem título' }}
+        </button>
+      }
+      <button type="button" class="nova" (click)="adicionarCapitulo()">+ Capítulo</button>
+    </div>
+
+    @for (c of capitulos.controls; track c; let i = $index) {
+      @if (i === ativo()) {
+        <div class="capitulo-ativo" [formGroup]="c" role="tabpanel">
+          <div class="linha-capitulo">
+            <label>
+              <span>Título do capítulo</span>
+              <input formControlName="titulo" maxlength="200" [attr.aria-invalid]="c.controls.titulo.invalid && c.controls.titulo.touched" />
+            </label>
+            <button type="button" class="botao-icone" [disabled]="i === 0" (click)="moverCapitulo(-1)" aria-label="Mover capítulo para a esquerda" title="Mover para a esquerda">←</button>
+            <button type="button" class="botao-icone" [disabled]="i === capitulos.length - 1" (click)="moverCapitulo(1)" aria-label="Mover capítulo para a direita" title="Mover para a direita">→</button>
+            <button type="button" class="botao-icone perigo" (click)="removerCapitulo()" aria-label="Excluir capítulo" title="Excluir capítulo">
+              <app-icone nome="lixeira" [tamanho]="20" />
+            </button>
+          </div>
+          <app-editor-rico formControlName="conteudoHtml" (dividir)="dividirCapitulo($event)" />
+        </div>
+      }
+    }
+  </div>
+
+  @if (mensagem(); as m) {
+    <p class="mensagem" [class.erro]="m.tipo === 'erro'" role="status">{{ m.texto }}</p>
+  }
+
+  <div class="acoes">
+    <button type="button" class="excluir" [disabled]="salvando()" (click)="confirmarExclusao.set(true)">
+      <app-icone nome="lixeira" [tamanho]="20" /> {{ id() ? 'Excluir artigo' : 'Descartar' }}
+    </button>
+    <div class="botoes">
+      <button type="button" class="btn btn-texto" [disabled]="salvando()" (click)="salvar('previa')">Pré-visualizar</button>
+      @if (publicado()) {
+        <button type="button" class="btn btn-contorno" [disabled]="salvando()" (click)="despublicar()">Despublicar</button>
+        <button type="button" class="btn btn-primario" [disabled]="salvando()" (click)="salvar('salvar')">
+          {{ salvando() ? 'Salvando…' : 'Salvar alterações' }}
+        </button>
+      } @else {
+        <button type="button" class="btn btn-contorno largo" [disabled]="salvando()" (click)="salvar('salvar')">
+          {{ salvando() ? 'Salvando…' : 'Salvar rascunho' }}
+        </button>
+        <button type="button" class="btn btn-primario" [disabled]="salvando()" (click)="salvar('publicar')">
+          <app-icone nome="enviar" [tamanho]="20" /> Publicar
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (confirmarExclusao()) {
+  <div class="modal-fundo" (click)="confirmarExclusao.set(false)">
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="titulo-exclusao" (click)="$event.stopPropagation()">
+      <h3 id="titulo-exclusao">{{ id() ? 'Excluir este artigo?' : 'Descartar este artigo?' }}</h3>
+      <p>
+        @if (id()) {
+          "{{ form.controls.titulo.value }}" e todos os seus capítulos serão excluídos definitivamente.
+          Para apenas tirá-lo do site, use <em>Despublicar</em>.
+        } @else {
+          O conteúdo ainda não salvo será apagado do editor.
+        }
+      </p>
+      <div class="modal-acoes">
+        <button type="button" class="btn btn-contorno" (click)="confirmarExclusao.set(false)">Cancelar</button>
+        <button type="button" class="btn btn-perigo" (click)="excluir()">{{ id() ? 'Excluir definitivamente' : 'Descartar' }}</button>
+      </div>
+    </div>
+  </div>
+}

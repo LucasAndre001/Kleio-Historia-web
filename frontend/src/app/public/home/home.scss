@@ -1,0 +1,141 @@
+main { display: block; }
+
+/* ===== Destaques ===== */
+.destaque {
+  position: relative;
+  height: clamp(430px, 60vh, 560px);
+  overflow: hidden;
+  background: #5b3a2c;
+
+  .fundo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .escuro { background: #5b3a2c; color: var(--bege-circulo); }
+  .entrar { animation: aparecer 600ms ease; }
+
+  .seta {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+    width: 52px; height: 52px; border-radius: 50%;
+    border: 1px solid rgba(251, 238, 226, 0.6); background: rgba(43, 24, 16, 0.35);
+    color: var(--claro); font-size: 2rem; line-height: 1; cursor: pointer;
+    &:hover { background: rgba(43, 24, 16, 0.6); }
+    &.esq { left: 20px; }
+    &.dir { right: 20px; }
+  }
+
+  .caixa {
+    position: absolute; z-index: 2; left: clamp(16px, 6vw, 88px); bottom: 64px;
+    width: min(440px, calc(100% - 32px));
+    display: flex; flex-direction: column; gap: 0.45rem;
+    background: rgba(127, 56, 36, 0.94); color: var(--claro);
+    border-radius: var(--raio); padding: 1.3rem 1.6rem;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+
+    .rotulo { font-size: 1rem; opacity: 0.9; }
+    .info { font-family: var(--fonte-marca); font-size: 0.75rem; letter-spacing: 0.12em; color: #f0c9a8; }
+    h2 { margin: 0; font-family: var(--fonte-marca); font-weight: 700; font-size: 1.8rem; line-height: 1.15; }
+    p {
+      margin: 0 0 0.3rem; font-size: 1.05rem; line-height: 1.45; opacity: 0.92;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .btn { align-self: flex-start; }
+  }
+
+  .bolinhas {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: 4px;
+    button { width: 30px; height: 30px; padding: 0; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    span { width: 12px; height: 12px; border-radius: 50%; background: rgba(251, 238, 226, 0.5); }
+    span.ativa { background: var(--claro); }
+  }
+}
+
+/* ===== Artigos ===== */
+.titulo-secao {
+  margin: 0; text-align: center; font-size: 2.8rem; color: var(--marrom);
+  &::after { content: ''; display: block; width: 160px; height: 1px; background: var(--bege-nav); margin: 0.4rem auto 0; }
+  &.esquerda { text-align: left; &::after { margin-left: 0; width: 140px; } }
+}
+
+.artigos { max-width: 1160px; margin: 0 auto; padding: 3.5rem 1.5rem 4.5rem; }
+
+.filtros {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; max-width: 900px; margin: 2rem auto 0.5rem;
+
+  label { display: flex; }
+  .busca {
+    flex: 1 1 340px; align-items: center; gap: 0.6rem; padding: 0 0.9rem; min-height: 48px;
+    background: var(--cartao); border: 1px solid var(--bege-circulo); border-radius: 6px; color: var(--texto-suave);
+    &:focus-within { border-color: var(--marrom); }
+    input { flex: 1; min-width: 0; border: none; background: transparent; outline: none; font-size: 1.1rem; color: var(--texto); }
+  }
+  select {
+    min-height: 48px; padding: 0 0.9rem; font-size: 1.05rem;
+    background: var(--cartao); border: 1px solid var(--bege-circulo); border-radius: 6px;
+  }
+}
+
+.contagem { text-align: center; margin: 0 0 1.8rem; font-size: 1rem; color: var(--texto-suave); min-height: 1.4em; }
+.limpar { font-size: 1rem; min-height: auto; padding: 0; text-decoration: underline; }
+
+.grade {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 2rem;
+  transition: opacity 150ms ease;
+  &.carregando { opacity: 0.55; }
+}
+.vazio { grid-column: 1 / -1; text-align: center; color: var(--texto-suave); }
+.mensagem-erro { text-align: center; color: var(--erro); }
+
+/* ===== Sugestão ===== */
+.sugestao {
+  background: var(--marrom); color: var(--claro); padding: 4rem 1.5rem 4.5rem;
+
+  h2 { margin: 0; text-align: center; font-size: 2.8rem; }
+  .sub { margin: 0.5rem 0 2.2rem; text-align: center; font-size: 1.2rem; opacity: 0.92; }
+
+  form { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.1rem; }
+  .grade-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; }
+  label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 1.15rem; }
+  .dica { font-size: 0.85rem; opacity: 0.8; margin-left: 0.3rem; }
+  input, textarea {
+    min-height: 46px; padding: 0 0.9rem; border: 2px solid transparent; border-radius: 6px;
+    background: #fffaf5; color: var(--texto); font-size: 1.1rem;
+    &:focus { outline: none; border-color: #e7b98f; }
+    &[aria-invalid='true'] { border-color: #ffb3a3; }
+  }
+  textarea { padding: 0.7rem 0.9rem; resize: vertical; }
+  small.erro { color: #ffd2c7; font-size: 0.9rem; }
+  .enviar { align-self: center; min-width: 220px; min-height: 48px; font-size: 1.2rem; }
+  .retorno { display: flex; justify-content: center; min-height: 1px; }
+  .ok, .falha { margin: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.1rem; border-radius: 6px; font-size: 1.1rem; }
+  .ok { background: rgba(253, 243, 234, 0.14); }
+  .falha { background: #fbe3dc; color: #8f1c13; }
+}
+
+/* ===== Sobre (Κλειώ) ===== */
+.sobre {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem 2rem;
+  padding: 3.5rem clamp(1rem, 5vw, 4rem);
+
+  .figura { flex: 0 1 520px; display: flex; justify-content: center; }
+  /* círculo bege com a imagem inteira dentro dele */
+  .circulo {
+    width: min(500px, 86vw); aspect-ratio: 1; border-radius: 50%;
+    background: var(--bege-circulo); overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .circulo img { width: 62%; height: auto; display: block; }
+  .texto { flex: 1 1 420px; max-width: 620px; }
+  .titulo-secao { font-size: clamp(2rem, 3.6vw, 2.8rem); }
+  h3 { margin: 1.4rem 0 1rem; font-family: var(--fonte-marca); font-weight: 600; font-size: 1.75rem; line-height: 1.25; color: var(--marrom-escuro); }
+  p { margin: 0; font-size: 1.25rem; line-height: 1.65; color: #3d2a20; }
+}
+
+@media (max-width: 700px) {
+  .destaque .seta { display: none; }
+  .destaque .caixa { left: 14px; right: 14px; width: auto; bottom: 48px; padding: 1rem 1.1rem; h2 { font-size: 1.4rem; } }
+  .destaque .caixa .btn { align-self: stretch; }
+  .titulo-secao { font-size: 2.3rem; }
+  .sobre { padding: 2rem 1.25rem; }
+  .sobre h3 { font-size: 1.4rem; }
+}
+
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .destaque .entrar { animation: none; } }

@@ -1,0 +1,71 @@
+<div class="modal-fundo" (click)="fechar.emit()">
+  <div class="janela" role="dialog" aria-modal="true" aria-labelledby="titulo-pdf" (click)="$event.stopPropagation()" (keydown.escape)="fechar.emit()">
+    <div class="topo">
+      <h2 id="titulo-pdf">Importar PDF</h2>
+      <button type="button" class="fechar" (click)="fechar.emit()" aria-label="Fechar"><app-icone nome="fechar" [tamanho]="24" /></button>
+    </div>
+
+    <div class="corpo">
+      <ol class="etapas" aria-label="Etapas">
+        <li [class.atual]="!resultado()" [attr.aria-current]="!resultado() ? 'step' : null">1. Enviar arquivo</li>
+        <li [class.atual]="!!resultado()" [attr.aria-current]="resultado() ? 'step' : null">2. Conferir extração</li>
+        <li>3. Revisar no editor</li>
+      </ol>
+
+      <label class="zona" [class.arrastando]="arrastando()" [class.escolhido]="!!arquivo()"
+             (dragover)="aoArrastar($event, true)" (dragleave)="aoArrastar($event, false)" (drop)="aoSoltar($event)">
+        <input type="file" accept="application/pdf,.pdf" (change)="selecionar($event)" [disabled]="enviando()" />
+        <app-icone nome="pdf" [tamanho]="34" [espessura]="1.4" />
+        @if (arquivo(); as a) {
+          <span class="texto">
+            <strong>{{ a.name }}</strong>
+            <span>{{ tamanhoLegivel(a.size) }} ·
+              @if (enviando()) { {{ progresso() < 100 ? 'enviando ' + progresso() + '%…' : 'extraindo o texto…' }} }
+              @else if (resultado()) { texto extraído com sucesso }
+              @else { clique para trocar }
+            </span>
+          </span>
+          @if (resultado()) { <span class="trocar">Trocar arquivo</span> }
+        } @else {
+          <span class="texto">
+            <strong>Arraste o PDF para cá ou clique para escolher</strong>
+            <span>Somente PDFs com texto selecionável · até {{ tamanhoMaximoMb }} MB</span>
+          </span>
+        }
+      </label>
+
+      @if (enviando()) {
+        <div class="progresso" role="progressbar" [attr.aria-valuenow]="progresso()" aria-valuemin="0" aria-valuemax="100"><div [style.width.%]="progresso()"></div></div>
+      }
+
+      @if (erro()) { <p class="erro" role="alert"><app-icone nome="alerta" [tamanho]="20" [espessura]="2" /> {{ erro() }}</p> }
+
+      @if (resultado(); as r) {
+        <dl class="resumo">
+          <div><dt>Páginas</dt><dd>{{ r.totalPaginas }}</dd></div>
+          <div><dt>Capítulos encontrados</dt><dd>{{ r.capitulos.length }}</dd></div>
+          <div><dt>Resumo</dt><dd>{{ r.resumoSugerido ? 'encontrado' : 'não encontrado' }}</dd></div>
+        </dl>
+        <div>
+          <p class="rotulo">Título sugerido</p>
+          <p class="titulo-sugerido">{{ r.tituloSugerido || '— defina no editor' }}</p>
+        </div>
+        <div>
+          <p class="rotulo">Capítulos</p>
+          <ol class="capitulos">@for (c of r.capitulos; track $index) { <li>{{ c.titulo }}</li> }</ol>
+        </div>
+      }
+
+      <p class="nota" role="note">
+        <app-icone nome="aviso" [tamanho]="20" [espessura]="1.9" />
+        Nada é publicado automaticamente. Revise o texto, as quebras de linha e insira as imagens no editor antes de publicar.
+        PDFs digitalizados (foto ou scan) não são suportados.
+      </p>
+
+      <div class="acoes">
+        <button type="button" class="btn btn-contorno" (click)="fechar.emit()">Cancelar</button>
+        <button type="button" class="btn btn-primario" [disabled]="!resultado()" (click)="confirmar()">Revisar no editor →</button>
+      </div>
+    </div>
+  </div>
+</div>

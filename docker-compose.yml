@@ -1,0 +1,76 @@
+# ===================================================================
+#  Kleio História — ambiente local completo
+#
+#    cp .env.example .env        (uma vez; ajuste as senhas se quiser)
+#    docker compose up --build
+#
+#  Frontend: http://localhost:4200
+#  API:      http://localhost:5080   (Swagger em /swagger)
+#  Postgres: localhost:5433          (para pgAdmin/DBeaver, opcional)
+# ===================================================================
+
+name: kleio-historia
+
+services:
+  # ---------------- Banco de dados ----------------
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kleio_historia}
+      POSTGRES_USER: ${POSTGRES_USER:-kleio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env (copie de .env.example)}
+    volumes:
+      - kleio_pgdata:/var/lib/postgresql/data   # dados persistem entre reinícios
+    ports:
+      - "${POSTGRES_PORTA_HOST:-5433}:5432"     # 5433 evita conflito com um Postgres local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # ---------------- API ASP.NET Core ----------------
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy              # só inicia com o Postgres pronto
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Padrao: "Host=db;Port=5432;Database=${POSTGRES_DB:-kleio_historia};Username=${POSTGRES_USER:-kleio};Password=${POSTGRES_PASSWORD}"
+      Jwt__Chave: ${JWT_CHAVE:?Defina JWT_CHAVE no arquivo .env (mínimo de 32 caracteres)}
+      Jwt__ExpiracaoMinutos: ${JWT_EXPIRACAO_MINUTOS:-120}
+      Admin__Nome: ${ADMIN_NOME:-Professor Administrador}
+      Admin__Email: ${ADMIN_EMAIL:?Defina ADMIN_EMAIL no arquivo .env}
+      Admin__Senha: ${ADMIN_SENHA:?Defina ADMIN_SENHA no arquivo .env}
+      Armazenamento__SemearDadosDemonstrativos: ${SEMEAR_DADOS_DEMO:-true}
+      Cors__OrigensPermitidas__0: http://localhost:${FRONTEND_PORTA_HOST:-4200}
+      Swagger__Habilitado: "true"
+    volumes:
+      - kleio_uploads:/app/uploads              # imagens e PDFs persistem entre reinícios
+    ports:
+      - "${API_PORTA_HOST:-5080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # ---------------- Frontend Angular + Nginx ----------------
+  web:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORTA_HOST:-4200}:80"
+
+volumes:
+  kleio_pgdata:
+  kleio_uploads:

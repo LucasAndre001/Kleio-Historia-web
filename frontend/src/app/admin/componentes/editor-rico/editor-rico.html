@@ -1,0 +1,74 @@
+<div class="editor" [class.desabilitado]="desabilitado()">
+  <div class="barra" role="toolbar" aria-label="Formatação do texto">
+    <button type="button" class="letra negrito" aria-label="Negrito" title="Negrito (Ctrl+B)" [class.ativo]="ativo('bold')" (click)="executar('negrito')">B</button>
+    <button type="button" class="letra italico" aria-label="Itálico" title="Itálico (Ctrl+I)" [class.ativo]="ativo('italic')" (click)="executar('italico')">I</button>
+    <button type="button" class="letra sublinhado" aria-label="Sublinhado" title="Sublinhado (Ctrl+U)" [class.ativo]="ativo('underline')" (click)="executar('sublinhado')">U</button>
+    <span class="divisor" aria-hidden="true"></span>
+    <button type="button" class="letra titulo" aria-label="Título de seção" title="Título de seção" [class.ativo]="ativo('heading', { level: 3 })" (click)="executar('titulo')">H1</button>
+    <button type="button" class="letra subtitulo" aria-label="Subtítulo" title="Subtítulo" [class.ativo]="ativo('heading', { level: 4 })" (click)="executar('subtitulo')">H2</button>
+    <span class="divisor" aria-hidden="true"></span>
+    <button type="button" aria-label="Lista com marcadores" title="Lista com marcadores" [class.ativo]="ativo('bulletList')" (click)="executar('lista')"><app-icone nome="lista" [tamanho]="22" [espessura]="1.9" /></button>
+    <button type="button" aria-label="Lista numerada" title="Lista numerada" [class.ativo]="ativo('orderedList')" (click)="executar('lista-numerada')"><app-icone nome="lista-numerada" [tamanho]="22" [espessura]="1.9" /></button>
+    <button type="button" aria-label="Citação" title="Citação" [class.ativo]="ativo('blockquote')" (click)="executar('citacao')"><app-icone nome="citacao" [tamanho]="22" [espessura]="1.9" /></button>
+    <button type="button" aria-label="Separador" title="Separador" (click)="executar('separador')"><app-icone nome="separador" [tamanho]="22" [espessura]="1.9" /></button>
+    <span class="divisor" aria-hidden="true"></span>
+    <button type="button" [attr.aria-label]="ativo('figura') ? 'Editar imagem e legenda' : 'Inserir imagem'" [title]="ativo('figura') ? 'Editar imagem e legenda' : 'Inserir imagem'"
+            [class.ativo]="ativo('figura') || painel() === 'imagem'" (click)="abrirPainelImagem()"><app-icone nome="imagem" [tamanho]="24" [espessura]="1.8" /></button>
+    <button type="button" aria-label="Link" title="Link" [class.ativo]="ativo('link') || painel() === 'link'" (click)="abrirPainelLink()"><app-icone nome="link" [tamanho]="22" [espessura]="1.9" /></button>
+    <span class="divisor" aria-hidden="true"></span>
+    <button type="button" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" [disabled]="!podeDesfazer()" (click)="executar('desfazer')"><app-icone nome="desfazer" [tamanho]="20" [espessura]="1.9" /></button>
+    <button type="button" aria-label="Refazer" title="Refazer (Ctrl+Shift+Z)" [disabled]="!podeRefazer()" (click)="executar('refazer')"><app-icone nome="refazer" [tamanho]="20" [espessura]="1.9" /></button>
+    @if (permitirDivisao()) {
+      <button type="button" class="dividir" title="Move o parágrafo do cursor (e tudo abaixo dele) para um novo capítulo" (click)="dividirAqui()">
+        <app-icone nome="tesoura" [tamanho]="18" /> Dividir capítulo aqui
+      </button>
+    }
+  </div>
+
+  @if (painel() === 'link') {
+    <div class="painel" (keydown.escape)="fecharPainel()">
+      <label>Endereço do link
+        <input type="url" [value]="linkUrl()" (input)="linkUrl.set($any($event.target).value)" (keydown.enter)="$event.preventDefault(); aplicarLink()" />
+      </label>
+      <div class="acoes">
+        <button type="button" class="btn btn-primario" (click)="aplicarLink()">Aplicar</button>
+        @if (ativo('link')) { <button type="button" class="btn btn-contorno" (click)="removerLink()">Remover link</button> }
+        <button type="button" class="btn btn-texto" (click)="fecharPainel()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  @if (painel() === 'imagem') {
+    <div class="painel" (keydown.escape)="fecharPainel()">
+      <div class="linha">
+        <label class="arquivo btn btn-contorno">
+          {{ enviandoImagem() ? 'Enviando…' : 'Enviar do computador' }}
+          <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="enviarArquivo($event)" [disabled]="enviandoImagem()" />
+        </label>
+        <span class="ou">ou</span>
+        <label class="cresce">Endereço da imagem
+          <input type="text" placeholder="https://…" [value]="imagemUrl()" (input)="imagemUrl.set($any($event.target).value)" />
+        </label>
+      </div>
+      @if (imagemUrl()) { <img class="miniatura" [src]="imagemUrl()" alt="Pré-visualização da imagem" /> }
+      <div class="linha">
+        <label class="cresce">Legenda <small>aparece abaixo da imagem</small>
+          <input type="text" maxlength="300" [value]="imagemLegenda()" (input)="imagemLegenda.set($any($event.target).value)" />
+        </label>
+        <label class="cresce">Texto alternativo <small>descrição para leitores de tela</small>
+          <input type="text" maxlength="300" [value]="imagemAlt()" (input)="imagemAlt.set($any($event.target).value)" />
+        </label>
+      </div>
+      <div class="acoes">
+        <button type="button" class="btn btn-primario" [disabled]="!imagemUrl() || enviandoImagem()" (click)="aplicarImagem()">
+          {{ editandoFigura() ? 'Atualizar imagem' : 'Inserir imagem' }}
+        </button>
+        <button type="button" class="btn btn-texto" (click)="fecharPainel()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  @if (erroPainel()) { <p class="erro" role="alert">{{ erroPainel() }}</p> }
+
+  <div #area class="area"></div>
+</div>

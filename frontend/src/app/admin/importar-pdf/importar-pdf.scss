@@ -1,0 +1,54 @@
+@use '../admin' as *;
+
+.modal-fundo {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem;
+  background: rgba(43, 24, 16, 0.55); overflow-y: auto;
+}
+.janela { width: min(760px, 100%); border-radius: 10px; overflow: hidden; background: $cartao; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); }
+
+.topo {
+  display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem 0.8rem 1.6rem;
+  background: $marrom; color: var(--claro);
+  h2 { margin: 0; font-size: 1.6rem; }
+  .fechar { @include botao-icone; color: var(--claro); &:hover { background: rgba(255, 255, 255, 0.1); } }
+}
+
+.corpo { padding: 1.4rem 1.7rem 1.6rem; display: flex; flex-direction: column; gap: 1.1rem; }
+
+.etapas {
+  list-style: none; margin: 0; padding: 0; display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 1.05rem;
+  li { padding: 0.25rem 0.9rem; border-radius: 999px; background: #ead4c2; color: #5c3a2a; }
+  li.atual { background: $marrom; color: var(--claro); }
+}
+
+.zona {
+  position: relative; display: flex; align-items: center; gap: 1rem; padding: 1.4rem 1.2rem;
+  border: 2px dashed #9a5a43; border-radius: 8px; background: #fff; color: $marrom; cursor: pointer;
+  input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .texto { flex: 1; display: flex; flex-direction: column; color: $texto; min-width: 0; }
+  strong { font-size: 1.2rem; font-weight: 600; overflow-wrap: anywhere; }
+  .texto span { font-size: 1rem; color: $suave; }
+  .trocar { text-decoration: underline; font-size: 1.1rem; }
+  &.arrastando, &:hover { background: #fffaf5; border-color: $marrom; }
+}
+
+.progresso { height: 8px; border-radius: 999px; background: #ead4c2; overflow: hidden; div { height: 100%; background: $marrom; transition: width 200ms ease; } }
+
+.erro { margin: 0; display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; border-radius: 6px; background: #fbe3dc; color: #8f1c13; font-size: 1.05rem; }
+
+.resumo {
+  margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.7rem;
+  div { background: #fff; border-radius: 6px; padding: 0.6rem 0.9rem; }
+  dt { font-size: 0.95rem; color: $suave; }
+  dd { margin: 0.1rem 0 0; font-size: 1.4rem; font-weight: 600; }
+}
+.rotulo { margin: 0 0 0.3rem; font-size: 1.05rem; color: $suave; }
+.titulo-sugerido { margin: 0; font-family: var(--fonte-marca); font-weight: 600; font-size: 1.25rem; }
+.capitulos { margin: 0; padding-left: 1.6rem; font-size: 1.15rem; line-height: 1.5; max-height: 200px; overflow-y: auto; }
+
+.nota {
+  margin: 0; display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.7rem 0.9rem; border-radius: 6px;
+  background: #fff4dc; color: #6b4300; font-size: 1.02rem;
+}
+
+.acoes { display: flex; justify-content: flex-end; gap: 0.7rem; flex-wrap: wrap; .btn { font-size: 1.15rem; } }

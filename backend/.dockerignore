@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/uploads/
+**/*.user
+**/.vs/
+**/.vscode/
+**/TestResults/
+KleioHistoria.Tests/

@@ -1,0 +1,143 @@
+@if (previa) {
+  <div class="faixa-previa">
+    <span>
+      <strong>Pré-visualização</strong> — é assim que o visitante verá este artigo
+      @if (statusPrevia() === 'rascunho') { (ainda é um <em>rascunho</em> e não aparece no site) }
+    </span>
+    @if (artigo(); as a) {
+      <a routerLink="/admin/painel" [queryParams]="{ editar: a.id }">← Voltar ao editor</a>
+    } @else {
+      <a routerLink="/admin/painel">← Voltar ao painel</a>
+    }
+  </div>
+} @else {
+  <app-header modo="voltar" ativo="artigos" />
+}
+
+<!-- Barra de progresso de leitura -->
+<div class="barra-progresso" role="progressbar" aria-label="Progresso de leitura"
+     aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percentual()">
+  <div class="preenchimento" [style.width.%]="percentual()"></div>
+</div>
+
+<main class="pagina-leitura">
+  @switch (estado()) {
+    @case ('carregando') {
+      <div class="esqueleto" aria-busy="true" aria-label="Carregando artigo">
+        <div class="linha curta"></div><div class="linha titulo"></div><div class="linha"></div><div class="linha"></div><div class="linha"></div>
+      </div>
+    }
+
+    @case ('nao-encontrado') {
+      <div class="aviso-tela">
+        <h1>Artigo não encontrado</h1>
+        <p>O endereço pode estar incorreto ou o artigo pode ter sido retirado de publicação.</p>
+        <a class="btn" routerLink="/" fragment="artigos">Ver todos os artigos</a>
+      </div>
+    }
+
+    @case ('erro') {
+      <div class="aviso-tela">
+        <h1>Não foi possível abrir o artigo</h1>
+        <p>{{ mensagemErro() }}</p>
+        <a class="btn" routerLink="/">Voltar ao início</a>
+      </div>
+    }
+
+    @case ('ok') {
+      @let a = artigo()!;
+      <div class="layout" [class.recolhido]="!sumarioAberto()">
+
+        <!-- Sumário lateral -->
+        <aside class="sumario" aria-label="Sumário">
+          <div class="sumario-topo">
+            @if (sumarioAberto()) { <h2>Sumário</h2> }
+            <button type="button" class="alternar" (click)="alternarSumario()" [attr.aria-expanded]="sumarioAberto()"
+                    [attr.aria-label]="sumarioAberto() ? 'Recolher sumário' : 'Expandir sumário'">
+              {{ sumarioAberto() ? '«' : '»' }}
+            </button>
+          </div>
+          @if (sumarioAberto()) {
+            <ol>
+              @for (c of a.capitulos; track c.id; let i = $index) {
+                <li>
+                  <button type="button" [class.ativo]="i === indice()" [attr.aria-current]="i === indice() ? 'location' : null"
+                          (click)="irParaCapitulo(i)">{{ c.ordem }}. {{ c.titulo }}</button>
+                </li>
+              }
+            </ol>
+            <div class="lido">
+              <div class="lido-linha"><span>Você leu</span><strong>{{ percentual() }}%</strong></div>
+              <div class="trilho"><div [style.width.%]="percentual()"></div></div>
+              @if (minutosRestantes() > 0) {
+                <p>Cerca de {{ minutosRestantes() }} min restantes</p>
+              } @else {
+                <p>Leitura concluída</p>
+              }
+            </div>
+          } @else {
+            <span class="vertical" aria-hidden="true">Sumário</span>
+          }
+        </aside>
+
+        <!-- Sumário compacto (celular) -->
+        <div class="sumario-mobile">
+          <button type="button" class="abrir" (click)="sumarioMobileAberto.set(!sumarioMobileAberto())"
+                  [attr.aria-expanded]="sumarioMobileAberto()">
+            <app-icone nome="menu" [tamanho]="18" [espessura]="2" />
+            <strong>Sumário</strong>
+            <span class="atual">{{ indice() + 1 }}. {{ capitulo()?.titulo }}</span>
+            <span class="pct">{{ percentual() }}%</span>
+          </button>
+          @if (sumarioMobileAberto()) {
+            <ol>
+              @for (c of a.capitulos; track c.id; let i = $index) {
+                <li><button type="button" [class.ativo]="i === indice()" (click)="irParaCapitulo(i)">{{ c.ordem }}. {{ c.titulo }}</button></li>
+              }
+            </ol>
+          }
+        </div>
+
+        <!-- Conteúdo -->
+        <article class="conteudo-artigo">
+          <div>
+            <p class="categoria">{{ a.categoria }}</p>
+            <h1>{{ a.titulo }}</h1>
+            <p class="meta">
+              @if (a.autor) { Por {{ a.autor }} · }
+              @if (a.dataPublicacao) { Publicado em {{ a.dataPublicacao | date: "d 'de' MMMM 'de' y" }} · }
+              {{ a.tempoLeituraMinutos }} min de leitura
+            </p>
+          </div>
+
+          <div #corpo class="capitulos">
+            @for (c of a.capitulos; track c.id) {
+              <section #secao class="capitulo" [attr.aria-label]="'Capítulo ' + c.ordem">
+                <h2 tabindex="-1"><span class="numero">{{ c.ordem }}.</span> {{ c.titulo }}</h2>
+                <!-- HTML sanitizado pela API; o Angular sanitiza novamente no [innerHTML]. -->
+                <div class="texto" [innerHTML]="c.conteudoHtml"></div>
+              </section>
+            }
+          </div>
+
+          @if (!previa) {
+            <div class="fim-artigo">
+              <span>Fim do artigo</span>
+              <a class="btn" routerLink="/" fragment="artigos">Ler outros artigos</a>
+            </div>
+          }
+        </article>
+      </div>
+    }
+  }
+</main>
+
+@if (retomadaEm() !== null) {
+  <div class="aviso-retomada" role="status">
+    <span>Retomamos de onde você parou ({{ retomadaEm() }}%).</span>
+    <button type="button" (click)="recomecar()">Ler do início</button>
+    <button type="button" class="fechar" (click)="fecharAviso()" aria-label="Fechar aviso"><app-icone nome="fechar" [tamanho]="16" /></button>
+  </div>
+}
+
+@if (!previa) { <app-footer /> }

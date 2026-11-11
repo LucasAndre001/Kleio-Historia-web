@@ -1,0 +1,46 @@
+@use '../../admin' as *;
+
+:host { display: block; min-width: 0; }
+
+.campo-imagem { display: flex; flex-direction: column; gap: 0.5rem; }
+.rotulo { font-size: 1.5rem; color: $marrom; }
+
+.corpo {
+  display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
+  padding: 0.9rem 1.2rem; border-radius: 6px; background: #fff;
+}
+
+.previa {
+  width: 112px; aspect-ratio: 4 / 3; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #efe2d6;
+  &.banner { width: 180px; aspect-ratio: 16 / 7; }
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sem-imagem {
+    width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.2rem; color: $suave; small { font-size: 0.75rem; text-align: center; padding: 0 0.3rem; }
+  }
+}
+
+.controles { flex: 1 1 200px; display: flex; flex-direction: column; align-items: flex-start; gap: 0.55rem; min-width: 0; }
+
+.origens {
+  display: inline-flex; border: 1px solid $borda; border-radius: 6px; overflow: hidden;
+  button {
+    min-height: 36px; padding: 0 0.9rem; border: none; background: #fff; color: $marrom; font-size: 1rem; cursor: pointer;
+    & + button { border-left: 1px solid $borda; }
+    &.ativa { background: $marrom; color: var(--claro); }
+  }
+}
+
+.enviar {
+  position: relative; overflow: hidden; cursor: pointer; font-size: 1.3rem; color: $marrom; text-decoration: underline;
+  input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  &.desabilitado { opacity: 0.6; cursor: progress; }
+  &:focus-within { outline: 2px solid #e0b48f; outline-offset: 2px; }
+}
+
+.link { @include campo; min-height: 44px; font-size: 1.05rem; border-color: $divisoria; }
+
+.remover { border: none; background: none; padding: 0; color: $suave; font-size: 1.05rem; cursor: pointer; min-height: 28px; text-decoration: underline; }
+
+.dica { font-size: 1rem; color: $suave; }
+.erro { font-size: 1rem; color: $perigo; }

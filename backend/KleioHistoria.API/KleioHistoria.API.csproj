@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Projeto único da API do Kleio História.
+    .NET 10 é a versão LTS (suporte longo) e todas as bibliotecas Microsoft abaixo
+    seguem a mesma linha 10.0.x, o que evita incompatibilidades entre EF Core,
+    Identity e o provedor do PostgreSQL (Npgsql).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>KleioHistoria.API</RootNamespace>
+    <!-- Permite guardar segredos locais fora do repositório: dotnet user-secrets set ... -->
+    <UserSecretsId>kleio-historia-api-local</UserSecretsId>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Gera o XML de documentação para o Swagger exibir os comentários /// -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Banco de dados: EF Core + provedor PostgreSQL -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
+
+    <!-- Autenticação: Identity (hash de senha, usuários, perfis) + JWT -->
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+
+    <!-- Documentação interativa da API -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
+
+    <!-- Conteúdo: sanitização de HTML e extração de texto de PDF -->
+    <PackageReference Include="HtmlSanitizer" Version="9.0.886" />
+    <PackageReference Include="PdfPig" Version="0.1.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Dados demonstrativos copiados junto com a aplicação -->
+    <Content Update="SeedData\**\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="KleioHistoria.Tests" />
+  </ItemGroup>
+
+</Project>

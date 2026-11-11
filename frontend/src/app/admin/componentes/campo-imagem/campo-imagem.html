@@ -1,0 +1,45 @@
+<div class="campo-imagem" role="group" [attr.aria-label]="rotulo()">
+  <span class="rotulo">{{ rotulo() }}</span>
+
+  <div class="corpo">
+    <div class="previa" [class.banner]="formato() === 'banner'">
+      @if (valor() && !previaQuebrada()) {
+        <img [src]="valor()" alt="Pré-visualização" (error)="previaQuebrada.set(true)" />
+      } @else {
+        <div class="sem-imagem">
+          <app-icone nome="imagem" [tamanho]="26" [espessura]="1.2" />
+          @if (previaQuebrada()) { <small>Não foi possível carregar</small> }
+        </div>
+      }
+    </div>
+
+    <div class="controles">
+      <div class="origens" role="radiogroup" aria-label="Origem da imagem">
+        <button type="button" role="radio" [attr.aria-checked]="origem() === 'arquivo'" [class.ativa]="origem() === 'arquivo'"
+                (click)="origem.set('arquivo')">Do computador</button>
+        <button type="button" role="radio" [attr.aria-checked]="origem() === 'link'" [class.ativa]="origem() === 'link'"
+                (click)="origem.set('link')">Link da internet</button>
+      </div>
+
+      @if (origem() === 'arquivo') {
+        <label class="enviar" [class.desabilitado]="enviando() || desabilitado()">
+          {{ enviando() ? 'Enviando…' : (valor() ? 'Trocar imagem' : 'Escolher arquivo') }}
+          <input type="file" [accept]="tiposAceitos" (change)="enviarArquivo($event)" [disabled]="enviando() || desabilitado()" />
+        </label>
+      } @else {
+        <input class="link" type="url" placeholder="https://…" maxlength="500" [disabled]="desabilitado()"
+               [value]="valor().startsWith('/uploads/') ? '' : valor()" (change)="aoDigitarLink($event)" (blur)="aoDigitarLink($event)" />
+      }
+
+      @if (valor()) {
+        <button type="button" class="remover" (click)="remover()">Remover imagem</button>
+      }
+    </div>
+  </div>
+
+  @if (erro()) {
+    <small class="erro" role="alert">{{ erro() }}</small>
+  } @else if (dica()) {
+    <small class="dica">{{ dica() }}</small>
+  }
+</div>

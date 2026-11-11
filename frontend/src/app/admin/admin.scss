@@ -1,0 +1,41 @@
+/*
+  Estilos compartilhados da área administrativa (importados com @use).
+  Mesma identidade da área pública (marrom/bege, Crimson Pro), como no protótipo.
+*/
+$marrom: #7f3824;
+$marrom-escuro: #5c2615;
+$texto: #2b1810;
+$suave: #6b5446;
+$borda: #c9aa8c;
+$divisoria: #e3cdbb;
+$cartao: #fdf3ea;
+$perigo: #a32a1e;
+
+@mixin campo {
+  width: 100%; min-height: 52px; padding: 0 1.1rem; border: 2px solid transparent; border-radius: 6px;
+  background: #fff; color: $texto; font-size: 1.2rem;
+  &:focus { outline: none; border-color: #e0b48f; }
+  &[aria-invalid='true'], &.invalido { border-color: #e69a88; }
+}
+
+@mixin botao-icone {
+  width: 44px; height: 44px; padding: 0; border: none; border-radius: 6px; background: transparent;
+  color: $marrom; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  &:hover:not(:disabled) { background: rgba(127, 56, 36, 0.08); }
+  &:disabled { opacity: 0.35; cursor: default; }
+}
+
+@mixin modal {
+  .modal-fundo {
+    position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem;
+    background: rgba(43, 24, 16, 0.55);
+  }
+  .modal {
+    width: min(480px, 100%); padding: 1.6rem; border-radius: 10px; background: $cartao;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    h3 { margin: 0 0 0.6rem; font-size: 1.6rem; color: $marrom; }
+    p { margin: 0 0 1.4rem; line-height: 1.5; }
+  }
+  .modal-acoes { display: flex; justify-content: flex-end; gap: 0.6rem; flex-wrap: wrap; }
+  .btn-perigo { background: $perigo; &:hover:not(:disabled) { background: #8f1c13; } }
+}

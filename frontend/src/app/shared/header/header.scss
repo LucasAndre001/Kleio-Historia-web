@@ -1,0 +1,65 @@
+.topo {
+  position: relative;
+  z-index: 30;
+  background: var(--marrom);
+  color: var(--claro);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem clamp(0.6rem, 3vw, 2.5rem);
+
+  a { color: inherit; text-decoration: none; }
+}
+
+.esquerda { display: flex; align-items: center; gap: 1rem; }
+
+.menu {
+  width: 44px; height: 44px; padding: 0; border: none; background: transparent;
+  color: var(--claro); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+.marca {
+  font-family: var(--fonte-marca);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+  letter-spacing: 0.04em;
+}
+
+.direita { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+.professor { color: #f3d9c6 !important; font-size: 1.05rem; &:hover span { text-decoration: underline; } }
+.voltar { justify-content: center; width: 52px; }
+
+/* Barra de navegação recolhível: anima a altura com grid-template-rows (0fr ↔ 1fr). */
+.recolhivel {
+  display: grid; grid-template-rows: 0fr; transition: grid-template-rows 250ms ease;
+  background: var(--bege-nav);
+  &.aberto { grid-template-rows: 1fr; }
+  > nav { overflow: hidden; min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .recolhivel { transition: none; } }
+
+.navegacao {
+  background: var(--bege-nav);
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0 1rem;
+
+  a {
+    font-size: 1.15rem;
+    color: var(--marrom-escuro);
+    text-decoration: none;
+    padding: 1rem 0.5rem 0.8rem;
+    border-bottom: 3px solid transparent;
+    &:hover { color: #4a1d10; }
+    &.ativo { color: #4a1d10; border-bottom-color: var(--marrom); }
+  }
+}
+
+@media (max-width: 600px) {
+  .professor span { display: none; }
+  .professor { width: 44px; justify-content: center; }
+  .navegacao a { font-size: 1rem; padding: 0.75rem 0.25rem 0.6rem; }
+}

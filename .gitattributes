@@ -1,0 +1,14 @@
+# Normaliza finais de linha para LF no repositório.
+# Importante para Docker: scripts e configs com CRLF (Windows) quebram em containers Linux.
+* text=auto eol=lf
+
+# Scripts do Windows precisam de CRLF para o cmd.exe ler corretamente.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
